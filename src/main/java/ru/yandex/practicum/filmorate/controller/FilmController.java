@@ -15,19 +15,17 @@ import java.util.List;
 @Slf4j
 public class FilmController {
 
-    private HashMap<Integer, Film> allFilms = new HashMap<>();
+    private final HashMap<Integer, Film> allFilms = new HashMap<>();
     private int actualId = 0;
     private static final LocalDate DATE_BORDER = LocalDate.of(1895, 12, 28);
 
     @PostMapping("/films")
     public Film addFilm(@Valid @RequestBody Film film) {
-        if (film.getReleaseDate().isBefore(DATE_BORDER)) {
-            throw new ValidationException("Некорректная дата релиза!");
-        } else {
+        if (releaseDateValidation(film)) {
             film.setId(++actualId);
             allFilms.put(film.getId(), film);
-            return film;
         }
+        return film;
     }
 
     @GetMapping("/films")
@@ -39,9 +37,19 @@ public class FilmController {
     public Film updateFilm(@Valid @RequestBody Film newFilm) {
         if (!allFilms.containsKey(newFilm.getId())) {
             throw new ValidationException("Такого фильма не существует!");
+        }
+        if (releaseDateValidation(newFilm)) {
+            allFilms.put(newFilm.getId(), newFilm);
+        }
+        return newFilm;
+
+    }
+
+    private boolean releaseDateValidation(Film film) {
+        if (film.getReleaseDate().isBefore(DATE_BORDER)) {
+            throw new ValidationException("Некорректная дата релиза!");
         } else {
-            allFilms.replace(newFilm.getId(), newFilm);
-            return newFilm;
+            return true;
         }
     }
 }

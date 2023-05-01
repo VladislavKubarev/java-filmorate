@@ -15,21 +15,16 @@ import java.util.List;
 @Slf4j
 public class UserController {
 
-    private HashMap<Integer, User> allUsers = new HashMap<>();
+    private final HashMap<Integer, User> allUsers = new HashMap<>();
     private int actualId = 0;
 
     @PostMapping("/users")
     public User createUser(@Valid @RequestBody User user) {
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-        if (user.getLogin().contains(" ")) {
-            throw new ValidationException("Логин не может содержать пробелов!");
-        } else {
+        if (userLoginValidation(user)) {
             user.setId(++actualId);
             allUsers.put(user.getId(), user);
-            return user;
         }
+        return user;
     }
 
     @GetMapping("/users")
@@ -41,9 +36,20 @@ public class UserController {
     public User updateUser(@Valid @RequestBody User newUser) {
         if (!allUsers.containsKey(newUser.getId())) {
             throw new ValidationException("Такого пользователя не существует!");
-        } else {
-            allUsers.replace(newUser.getId(), newUser);
-            return newUser;
         }
+        if (userLoginValidation(newUser)) {
+            allUsers.put(newUser.getId(), newUser);
+        }
+        return newUser;
+    }
+
+    private boolean userLoginValidation(User user) {
+        if (user.getLogin().contains(" ")) {
+            throw new ValidationException("Логин не может содержать пробелов!");
+        }
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
+        return true;
     }
 }
