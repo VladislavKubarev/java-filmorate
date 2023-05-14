@@ -3,8 +3,12 @@ package ru.yandex.practicum.filmorate.controller;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.user.UserService;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -17,12 +21,14 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 class UserControllerTest {
 
-    private UserController userController;
+    private UserService userService;
+    private UserStorage userStorage;
     private Validator validator;
 
     @BeforeEach
     void setUp() {
-        userController = new UserController();
+        userStorage = new InMemoryUserStorage();
+        userService = new UserService(userStorage);
         validator = Validation.buildDefaultValidatorFactory().getValidator();
     }
 
@@ -39,10 +45,10 @@ class UserControllerTest {
     void createCorrectUser() {
         User testUser = addTestUser();
 
-        userController.createUser(testUser);
+        userService.createUser(testUser);
 
         assertEquals(1, testUser.getId());
-        assertEquals(testUser, userController.showAllUsers().get(0));
+        assertEquals(testUser, userService.showAllUsers().get(0));
     }
 
     @Test
@@ -81,7 +87,7 @@ class UserControllerTest {
         testUser.setLogin("vLaD i KaVkAz");
 
         ValidationException ex = assertThrows(ValidationException.class,
-                () -> userController.createUser(testUser)
+                () -> userService.createUser(testUser)
         );
 
         assertEquals("Логин не может содержать пробелов!", ex.getMessage());
@@ -91,7 +97,7 @@ class UserControllerTest {
     void createUserWithBlankName() {
         User testUser = addTestUser();
         testUser.setName("");
-        userController.createUser(testUser);
+        userService.createUser(testUser);
 
         assertEquals(testUser.getName(), testUser.getLogin());
     }
@@ -109,7 +115,7 @@ class UserControllerTest {
     @Test
     void updateNonexistentUser() {
         User testUser = addTestUser();
-        userController.createUser(testUser);
+        userService.createUser(testUser);
 
         User newUser = new User();
         newUser.setId(10);
@@ -118,11 +124,11 @@ class UserControllerTest {
         newUser.setEmail("petr_perviy@yandex.ru");
         newUser.setBirthday(LocalDate.of(1672, 6, 9));
 
-        ValidationException ex = assertThrows(ValidationException.class,
-                () -> userController.updateUser(newUser)
+        NotFoundException ex = assertThrows(NotFoundException.class,
+                () -> userService.updateUser(newUser)
         );
 
-        assertEquals("Такого пользователя не существует!", ex.getMessage());
+        assertEquals(String.format("Пользователя с ID %d не существует!", newUser.getId()), ex.getMessage());
     }
 
 

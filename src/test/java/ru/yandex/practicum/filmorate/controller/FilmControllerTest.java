@@ -3,8 +3,14 @@ package ru.yandex.practicum.filmorate.controller;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.film.FilmService;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -18,12 +24,16 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 class FilmControllerTest {
 
-    private FilmController filmController;
+    private FilmStorage filmStorage;
+    private UserStorage userStorage;
+    private FilmService filmService;
     private Validator validator;
 
     @BeforeEach
     void setUp() {
-        filmController = new FilmController();
+        filmStorage = new InMemoryFilmStorage();
+        userStorage = new InMemoryUserStorage();
+        filmService = new FilmService(filmStorage, userStorage);
         validator = Validation.buildDefaultValidatorFactory().getValidator();
     }
 
@@ -40,10 +50,10 @@ class FilmControllerTest {
     void createCorrectFilm() {
         Film testFilm = createFilm();
 
-        filmController.addFilm(testFilm);
+        filmService.addFilm(testFilm);
 
         assertEquals(1, testFilm.getId());
-        assertEquals(testFilm, filmController.showAllFilms().get(0));
+        assertEquals(testFilm, filmService.showAllFilms().get(0));
     }
 
     @Test
@@ -75,7 +85,7 @@ class FilmControllerTest {
         testFilm.setReleaseDate(LocalDate.of(1895, 12, 27));
 
         ValidationException ex = assertThrows(ValidationException.class,
-                () -> filmController.addFilm(testFilm)
+                () -> filmService.addFilm(testFilm)
         );
 
         assertEquals("Некорректная дата релиза!", ex.getMessage());
@@ -94,7 +104,7 @@ class FilmControllerTest {
     @Test
     void updateNonexistentFilm() {
         Film testFilm = createFilm();
-        filmController.addFilm(testFilm);
+        filmService.addFilm(testFilm);
 
         Film newFilm = new Film();
         newFilm.setId(10);
@@ -103,10 +113,10 @@ class FilmControllerTest {
         newFilm.setReleaseDate(LocalDate.of(2000, 1, 1));
         newFilm.setDuration(120);
 
-        ValidationException ex = assertThrows(ValidationException.class,
-                () -> filmController.updateFilm(newFilm)
+        NotFoundException ex = assertThrows(NotFoundException.class,
+                () -> filmService.updateFilm(newFilm)
         );
 
-        assertEquals("Такого фильма не существует!", ex.getMessage());
+        assertEquals(String.format("Фильма с ID %d не существует!", newFilm.getId()), ex.getMessage());
     }
 }
