@@ -3,10 +3,12 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 
 import javax.validation.Valid;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -14,6 +16,7 @@ import java.util.List;
 public class FilmController {
 
     private final FilmService filmService;
+    private static final LocalDate DATE_BORDER = LocalDate.of(1895, 12, 28);
 
     @Autowired
     public FilmController(FilmService filmService) {
@@ -22,6 +25,7 @@ public class FilmController {
 
     @PostMapping("/films")
     public Film addFilm(@Valid @RequestBody Film film) {
+        releaseDateValidation(film);
         return filmService.addFilm(film);
     }
 
@@ -37,6 +41,7 @@ public class FilmController {
 
     @PutMapping("/films")
     public Film updateFilm(@Valid @RequestBody Film newFilm) {
+        releaseDateValidation(newFilm);
         return filmService.updateFilm(newFilm);
 
     }
@@ -54,5 +59,11 @@ public class FilmController {
     @GetMapping("/films/popular")
     public List<Film> showPopularFilm(@RequestParam(defaultValue = "10", required = false) long count) {
         return filmService.showPopularFilm(count);
+    }
+
+    private void releaseDateValidation(Film film) {
+        if (film.getReleaseDate().isBefore(DATE_BORDER)) {
+            throw new ValidationException("Некорректная дата релиза!");
+        }
     }
 }

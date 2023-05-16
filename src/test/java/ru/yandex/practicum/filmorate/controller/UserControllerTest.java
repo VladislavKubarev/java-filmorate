@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -22,13 +21,13 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserControllerTest {
 
     private UserService userService;
-    private UserStorage userStorage;
+    private UserController userController;
     private Validator validator;
 
     @BeforeEach
     void setUp() {
-        userStorage = new InMemoryUserStorage();
-        userService = new UserService(userStorage);
+        userService = new UserService(new InMemoryUserStorage());
+        userController = new UserController(userService);
         validator = Validation.buildDefaultValidatorFactory().getValidator();
     }
 
@@ -45,7 +44,7 @@ class UserControllerTest {
     void createCorrectUser() {
         User testUser = addTestUser();
 
-        userService.createUser(testUser);
+        userController.createUser(testUser);
 
         assertEquals(1, testUser.getId());
         assertEquals(testUser, userService.showAllUsers().get(0));
@@ -87,7 +86,7 @@ class UserControllerTest {
         testUser.setLogin("vLaD i KaVkAz");
 
         ValidationException ex = assertThrows(ValidationException.class,
-                () -> userService.createUser(testUser)
+                () -> userController.createUser(testUser)
         );
 
         assertEquals("Логин не может содержать пробелов!", ex.getMessage());
@@ -97,7 +96,7 @@ class UserControllerTest {
     void createUserWithBlankName() {
         User testUser = addTestUser();
         testUser.setName("");
-        userService.createUser(testUser);
+        userController.createUser(testUser);
 
         assertEquals(testUser.getName(), testUser.getLogin());
     }
@@ -115,7 +114,7 @@ class UserControllerTest {
     @Test
     void updateNonexistentUser() {
         User testUser = addTestUser();
-        userService.createUser(testUser);
+        userController.createUser(testUser);
 
         User newUser = new User();
         newUser.setId(10);
@@ -125,11 +124,9 @@ class UserControllerTest {
         newUser.setBirthday(LocalDate.of(1672, 6, 9));
 
         NotFoundException ex = assertThrows(NotFoundException.class,
-                () -> userService.updateUser(newUser)
+                () -> userController.updateUser(newUser)
         );
 
         assertEquals(String.format("Пользователя с ID %d не существует!", newUser.getId()), ex.getMessage());
     }
-
-
 }

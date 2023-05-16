@@ -39,18 +39,18 @@ public class FilmService {
     }
 
     public void addLike(long filmId, long userId) {
-        if (filmStorage.getFilmById(filmId) == null || userStorage.getUserById(userId) == null) {
+        Film film = filmStorage.getFilmById(filmId);
+        if (film == null || userStorage.getUserById(userId) == null) {
             throw new NotFoundException("Указанный ресурс не найден!");
         }
-        Film film = filmStorage.getFilmById(filmId);
         film.getLikes().add(userId);
     }
 
     public void deleteLike(long filmId, long userId) {
-        if (filmStorage.getFilmById(filmId) == null || userStorage.getUserById(userId) == null) {
+        Film film = filmStorage.getFilmById(filmId);
+        if (film == null || userStorage.getUserById(userId) == null) {
             throw new NotFoundException("Указанный ресурс не найден!");
         }
-        Film film = filmStorage.getFilmById(filmId);
         film.getLikes().remove(userId);
     }
 

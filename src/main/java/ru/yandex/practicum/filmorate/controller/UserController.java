@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 
@@ -23,6 +24,7 @@ public class UserController {
 
     @PostMapping("/users")
     public User createUser(@Valid @RequestBody User user) {
+        userLoginValidation(user);
         return userService.createUser(user);
     }
 
@@ -33,6 +35,7 @@ public class UserController {
 
     @PutMapping("/users")
     public User updateUser(@Valid @RequestBody User newUser) {
+        userLoginValidation(newUser);
         return userService.updateUser(newUser);
     }
 
@@ -59,5 +62,14 @@ public class UserController {
     @GetMapping("/users/{id}/friends/common/{otherId}")
     public List<User> showCommonFriendsLists(@PathVariable long id, @PathVariable long otherId) {
         return userService.showCommonFriendsList(id, otherId);
+    }
+
+    private void userLoginValidation(User user) {
+        if (user.getLogin().contains(" ")) {
+            throw new ValidationException("Логин не может содержать пробелов!");
+        }
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
     }
 }

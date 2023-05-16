@@ -40,30 +40,30 @@ public class UserService {
     }
 
     public void addFriend(long userId, long friendId) {
-        if (userStorage.getUserById(userId) == null || userStorage.getUserById(friendId) == null) {
-            throw new NotFoundException("Указанный ресурс не найден!");
-        }
         User user = userStorage.getUserById(userId);
         User friend = userStorage.getUserById(friendId);
+        if (user == null || friend == null) {
+            throw new NotFoundException("Указанный ресурс не найден!");
+        }
         user.getFriends().add(friendId);
         friend.getFriends().add(userId);
     }
 
     public void deleteFriend(long userId, long friendId) {
-        if (userStorage.getUserById(userId) == null || userStorage.getUserById(friendId) == null) {
-            throw new NotFoundException("Указанный ресурс не найден!");
-        }
         User user = userStorage.getUserById(userId);
         User friend = userStorage.getUserById(friendId);
+        if (user == null || friend == null) {
+            throw new NotFoundException("Указанный ресурс не найден!");
+        }
         user.getFriends().remove(friendId);
         friend.getFriends().remove(userId);
     }
 
     public List<User> showFriendsList(long userId) {
-        if (userStorage.getUserById(userId) == null) {
+        User user = userStorage.getUserById(userId);
+        if (user == null) {
             throw new NotFoundException("Указанный ресурс не найден!");
         }
-        User user = userStorage.getUserById(userId);
         List<User> friendsList = new ArrayList<>();
         for (Long idFriend : user.getFriends()) {
             friendsList.add(userStorage.getUserById(idFriend));
@@ -72,11 +72,11 @@ public class UserService {
     }
 
     public List<User> showCommonFriendsList(long userId, long otherId) {
-        if (userStorage.getUserById(userId) == null || userStorage.getUserById(otherId) == null) {
-            throw new NotFoundException("Указанный ресурс не найден!");
-        }
         User user = userStorage.getUserById(userId);
         User otherUser = userStorage.getUserById(otherId);
+        if (user == null || otherUser == null) {
+            throw new NotFoundException("Указанный ресурс не найден!");
+        }
         List<User> commonFriendsList = new ArrayList<>();
         Set<Long> commonId = new HashSet<>(user.getFriends());
         commonId.retainAll(otherUser.getFriends());
