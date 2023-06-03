@@ -3,8 +3,11 @@ package ru.yandex.practicum.filmorate.controller;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.user.UserService;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -17,12 +20,14 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 class UserControllerTest {
 
+    private UserService userService;
     private UserController userController;
     private Validator validator;
 
     @BeforeEach
     void setUp() {
-        userController = new UserController();
+        userService = new UserService(new InMemoryUserStorage());
+        userController = new UserController(userService);
         validator = Validation.buildDefaultValidatorFactory().getValidator();
     }
 
@@ -42,7 +47,7 @@ class UserControllerTest {
         userController.createUser(testUser);
 
         assertEquals(1, testUser.getId());
-        assertEquals(testUser, userController.showAllUsers().get(0));
+        assertEquals(testUser, userService.showAllUsers().get(0));
     }
 
     @Test
@@ -118,12 +123,10 @@ class UserControllerTest {
         newUser.setEmail("petr_perviy@yandex.ru");
         newUser.setBirthday(LocalDate.of(1672, 6, 9));
 
-        ValidationException ex = assertThrows(ValidationException.class,
+        NotFoundException ex = assertThrows(NotFoundException.class,
                 () -> userController.updateUser(newUser)
         );
 
-        assertEquals("Такого пользователя не существует!", ex.getMessage());
+        assertEquals(String.format("Пользователя с ID %d не существует!", newUser.getId()), ex.getMessage());
     }
-
-
 }
