@@ -5,11 +5,11 @@
 ### Примеры базовых запросов
 ```sql
 SELECT * 
-FROM users 
+FROM users; 
 ```
 
 ```sql
 SELECT *
-FROM films
+FROM films;
 ```
 
