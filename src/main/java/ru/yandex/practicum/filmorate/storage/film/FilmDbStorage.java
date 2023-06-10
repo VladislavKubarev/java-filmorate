@@ -71,13 +71,8 @@ public class FilmDbStorage implements FilmStorage {
                 "where film_id = ?";
 
         if (doesTheFilmExist(newFilm.getId())) {
-            jdbcTemplate.update(sqlQuery
-                    , newFilm.getName()
-                    , newFilm.getDescription()
-                    , newFilm.getReleaseDate()
-                    , newFilm.getDuration()
-                    , newFilm.getMpa().getId()
-                    , newFilm.getId());
+            jdbcTemplate.update(sqlQuery, newFilm.getName(), newFilm.getDescription(), newFilm.getReleaseDate(),
+                    newFilm.getDuration(), newFilm.getMpa().getId(), newFilm.getId());
 
             newFilm.setMpa(mpaStorage.getMpaById(newFilm.getMpa().getId()));
             genreStorage.updateGenreForFilm(newFilm, newFilm.getGenres());
