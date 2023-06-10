@@ -26,7 +26,7 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        userService = new UserService(new InMemoryUserStorage());
+        userService = new UserService(new InMemoryUserStorage(), null);
         userController = new UserController(userService);
         validator = Validation.buildDefaultValidatorFactory().getValidator();
     }

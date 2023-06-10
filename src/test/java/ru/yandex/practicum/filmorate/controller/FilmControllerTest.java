@@ -28,7 +28,7 @@ class FilmControllerTest {
 
     @BeforeEach
     void setUp() {
-        filmService = new FilmService(new InMemoryFilmStorage(), new InMemoryUserStorage());
+        filmService = new FilmService(new InMemoryFilmStorage(), new InMemoryUserStorage(), null);
         filmController = new FilmController(filmService);
         validator = Validation.buildDefaultValidatorFactory().getValidator();
     }
