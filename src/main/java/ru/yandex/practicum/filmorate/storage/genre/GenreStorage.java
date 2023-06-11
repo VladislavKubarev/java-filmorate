@@ -14,9 +14,7 @@ public interface GenreStorage {
 
     List<Genre> getGenresByFilmId(long filmId);
 
-    void addGenreForFilm(long filmId, int genreId);
+    void addGenreForFilm(Film film, Set<Genre> genres);
 
-    Set<Genre> updateGenreForFilm(Film film, Set<Genre> genres);
-
-
+    void updateGenreForFilm(Film film, Set<Genre> genres);
 }

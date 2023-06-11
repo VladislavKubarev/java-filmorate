@@ -10,6 +10,8 @@ public interface FriendsStorage {
 
     void deleteFriend(User user, User friend);
 
-    List<Long> showFriendsList(User user);
+    List<User> showFriendsList(long userId);
+
+    List<User> showCommonFriendsList(long userId, long otherId);
 
 }

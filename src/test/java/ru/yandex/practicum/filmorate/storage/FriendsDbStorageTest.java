@@ -37,7 +37,7 @@ public class FriendsDbStorageTest {
         user.setName("Petr");
         user.setLogin("Petryxa");
         user.setEmail("petr_perviy@yandex.ru");
-        user.setBirthday(LocalDate.of(1672, 6, 9));
+        user.setBirthday(LocalDate.of(1985, 6, 9));
         return user;
     }
 
@@ -49,11 +49,11 @@ public class FriendsDbStorageTest {
         friendsDbStorage.addFriend(user1, user2);
         friendsDbStorage.addFriend(user2, user1);
 
-        List<Long> idFriendsByUser1 = friendsDbStorage.showFriendsList(user1); // Лист ID друзей юзера1
-        List<Long> idFriendsByUser2 = friendsDbStorage.showFriendsList(user2); // Лист ID друзей юзера2
+        List<User> friendsByUser1 = friendsDbStorage.showFriendsList(user1.getId()); // Лист ID друзей юзера1
+        List<User> friendsByUser2 = friendsDbStorage.showFriendsList(user2.getId()); // Лист ID друзей юзера2
 
-        assertTrue(idFriendsByUser1.contains(user2.getId()));
-        assertTrue(idFriendsByUser2.contains(user1.getId()));
+        assertTrue(friendsByUser1.contains(user2));
+        assertTrue(friendsByUser2.contains(user1));
     }
 
     @Test
@@ -66,8 +66,8 @@ public class FriendsDbStorageTest {
 
         friendsDbStorage.deleteFriend(user1, user2);
 
-        List<Long> idFriendsByUser1 = friendsDbStorage.showFriendsList(user1); // Лист ID друзей юзера1
+        List<User> FriendsByUser1 = friendsDbStorage.showFriendsList(user1.getId()); // Лист ID друзей юзера1
 
-        assertEquals(0, idFriendsByUser1.size());
+        assertEquals(0, FriendsByUser1.size());
     }
 }

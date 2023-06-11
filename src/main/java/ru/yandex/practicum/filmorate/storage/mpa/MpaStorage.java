@@ -9,4 +9,6 @@ public interface MpaStorage {
     Mpa getMpaById(int id);
 
     List<Mpa> showAllMpa();
+
+    Mpa getMpaByFilmId(long filmId);
 }

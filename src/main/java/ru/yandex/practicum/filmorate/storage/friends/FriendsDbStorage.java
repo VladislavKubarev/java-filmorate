@@ -2,13 +2,14 @@ package ru.yandex.practicum.filmorate.storage.friends;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
-@Component
 @Repository
 public class FriendsDbStorage implements FriendsStorage {
 
@@ -35,9 +36,43 @@ public class FriendsDbStorage implements FriendsStorage {
     }
 
     @Override
-    public List<Long> showFriendsList(User user) {
-        String sqlQuery = "select friend_id from friends where user_id = ?";
+    public List<User> showFriendsList(long userId) {
+        String sqlQuery = "select * from users where user_id in" +
+                "(select friend_id from friends where user_id = ?)";
 
-        return jdbcTemplate.queryForList(sqlQuery, Long.class, user.getId());
+        return jdbcTemplate.query(sqlQuery, new RowMapper<User>() {
+            @Override
+            public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+                User user = new User();
+                user.setId(rs.getLong("user_id"));
+                user.setLogin(rs.getString("login"));
+                user.setName(rs.getString("name"));
+                user.setEmail(rs.getString("email"));
+                user.setBirthday(rs.getDate("birthday").toLocalDate());
+
+                return user;
+            }
+        }, userId);
+    }
+
+    @Override
+    public List<User> showCommonFriendsList(long userId, long otherId) {
+        String sqlQuery = "select * from users where user_id in" +
+                "(select friend_id from friends where user_id = ?)" +
+                "and user_id in (select friend_id from friends where user_id = ?)";
+
+        return jdbcTemplate.query(sqlQuery, new RowMapper<User>() {
+            @Override
+            public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+                User user = new User();
+                user.setId(rs.getLong("user_id"));
+                user.setLogin(rs.getString("login"));
+                user.setName(rs.getString("name"));
+                user.setEmail(rs.getString("email"));
+                user.setBirthday(rs.getDate("birthday").toLocalDate());
+
+                return user;
+            }
+        }, userId, otherId);
     }
 }

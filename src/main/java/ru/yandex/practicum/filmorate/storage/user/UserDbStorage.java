@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -16,7 +15,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-@Component
 @Primary
 @Repository
 public class UserDbStorage implements UserStorage {
@@ -61,9 +59,9 @@ public class UserDbStorage implements UserStorage {
         String sqlQuery = "select user_id, login, name, email, birthday " +
                 "from users where user_id = ?";
 
-        if (doesTheUserExist(id)) {
+        try {
             return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToUser, id);
-        } else {
+        } catch (RuntimeException e) {
             throw new NotFoundException(String.format("Пользователя с ID %d не существует!", id));
         }
     }

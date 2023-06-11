@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -17,7 +16,6 @@ import java.sql.*;
 import java.util.HashSet;
 import java.util.List;
 
-@Component
 @Primary
 @Repository
 public class FilmDbStorage implements FilmStorage {
@@ -51,8 +49,8 @@ public class FilmDbStorage implements FilmStorage {
         }, keyHolder);
 
         film.setId(keyHolder.getKey().longValue());
-        film.setMpa(mpaStorage.getMpaById(film.getMpa().getId()));
-        genreStorage.updateGenreForFilm(film, film.getGenres());
+
+        genreStorage.addGenreForFilm(film, film.getGenres());
 
         return film;
     }
@@ -74,7 +72,6 @@ public class FilmDbStorage implements FilmStorage {
             jdbcTemplate.update(sqlQuery, newFilm.getName(), newFilm.getDescription(), newFilm.getReleaseDate(),
                     newFilm.getDuration(), newFilm.getMpa().getId(), newFilm.getId());
 
-            newFilm.setMpa(mpaStorage.getMpaById(newFilm.getMpa().getId()));
             genreStorage.updateGenreForFilm(newFilm, newFilm.getGenres());
 
             return newFilm;
@@ -87,9 +84,9 @@ public class FilmDbStorage implements FilmStorage {
     public Film getFilmById(long id) {
         String sqlQuery = "select * from films where film_id = ?";
 
-        if (doesTheFilmExist(id)) {
+        try {
             return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToFilm, id);
-        } else {
+        } catch (RuntimeException e) {
             throw new NotFoundException(String.format("Фильма с ID %d не существует!", id));
         }
     }
@@ -102,7 +99,8 @@ public class FilmDbStorage implements FilmStorage {
         film.setReleaseDate(resultSet.getDate("release_date").toLocalDate());
         film.setDuration(resultSet.getInt("duration"));
         film.setMpa(mpaStorage.getMpaById(resultSet.getInt("mpa_id")));
-        film.setGenres(new HashSet<>(genreStorage.getGenresByFilmId(film.getId())));
+        film.setGenres(new HashSet<>(genreStorage.getGenresByFilmId(resultSet.getLong("film_id"))));
+
         return film;
     }
 

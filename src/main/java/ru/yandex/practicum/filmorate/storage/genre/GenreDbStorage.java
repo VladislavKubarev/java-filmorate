@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.storage.genre;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -10,12 +9,10 @@ import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-@Component
 @Repository
 public class GenreDbStorage implements GenreStorage {
 
@@ -27,22 +24,19 @@ public class GenreDbStorage implements GenreStorage {
     }
 
     @Override
-    public void addGenreForFilm(long filmId, int genreId) {
+    public void addGenreForFilm(Film film, Set<Genre> genres) {
         String sqlQuery = "insert into film_genre (film_id, genre_id) values (?, ?)";
 
-        jdbcTemplate.update(sqlQuery, filmId, genreId);
+        genres.forEach(genre -> jdbcTemplate.update(sqlQuery, film.getId(), genre.getId()));
+        film.setGenres(new HashSet<>(getGenresByFilmId(film.getId())));
     }
 
     @Override
-    public Set<Genre> updateGenreForFilm(Film film, Set<Genre> genres) {
+    public void updateGenreForFilm(Film film, Set<Genre> genres) {
         String sqlQuery = "delete from film_genre where film_id = ?";
 
         jdbcTemplate.update(sqlQuery, film.getId());
-
-        film.setGenres(film.getGenres().stream().map(g -> getGenreById(g.getId()))
-                .sorted(Comparator.comparing(Genre::getId)).collect(Collectors.toSet()));
-        genres.forEach(g -> addGenreForFilm(film.getId(), g.getId()));
-        return film.getGenres();
+        addGenreForFilm(film, genres);
     }
 
     @Override
@@ -56,9 +50,9 @@ public class GenreDbStorage implements GenreStorage {
     public Genre getGenreById(int genreId) {
         String sqlQuery = "select * from genre where genre_id = ?";
 
-        if (doesTheGenreExist(genreId)) {
+        try {
             return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToGenre, genreId);
-        } else {
+        } catch (RuntimeException e) {
             throw new NotFoundException(String.format("Жанра с ID %d не существует!", genreId));
         }
     }
@@ -80,16 +74,5 @@ public class GenreDbStorage implements GenreStorage {
         genre.setName(resultSet.getString("name"));
 
         return genre;
-    }
-
-    private boolean doesTheGenreExist(long id) {
-        String sqlQuery = "select count(genre_id) from genre where genre_id = ?";
-        long countId = jdbcTemplate.queryForObject(sqlQuery, Long.class, id);
-
-        if (countId > 0) {
-            return true;
-        } else {
-            return false;
-        }
     }
 }
