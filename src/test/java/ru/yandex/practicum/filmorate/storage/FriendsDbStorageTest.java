@@ -66,8 +66,8 @@ public class FriendsDbStorageTest {
 
         friendsDbStorage.deleteFriend(user1, user2);
 
-        List<User> FriendsByUser1 = friendsDbStorage.showFriendsList(user1.getId()); // Лист ID друзей юзера1
+        List<User> friendsByUser1 = friendsDbStorage.showFriendsList(user1.getId()); // Лист ID друзей юзера1
 
-        assertEquals(0, FriendsByUser1.size());
+        assertEquals(0, friendsByUser1.size());
     }
 }
