@@ -37,8 +37,9 @@ public class LikesDbStorageTest {
         film.setReleaseDate(LocalDate.of(2012, 12, 21));
         film.setDuration(180);
         film.setMpa(new Mpa(5, "NC-17"));
-        film.setGenres(Set.of(new Genre(1, "Комедия")));
         return film;
+
+
     }
 
     private Film createFilm2() {
@@ -48,7 +49,6 @@ public class LikesDbStorageTest {
         film.setReleaseDate(LocalDate.of(2012, 12, 22));
         film.setDuration(90);
         film.setMpa(new Mpa(5, "NC-17"));
-        film.setGenres(Set.of(new Genre(2, "Драма"), new Genre(5, "Документальный")));
         return film;
     }
 

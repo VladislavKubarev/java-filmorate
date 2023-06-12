@@ -33,7 +33,6 @@ class FilmDbStorageTest {
         film.setReleaseDate(LocalDate.of(2012, 12, 21));
         film.setDuration(180);
         film.setMpa(new Mpa(5, "NC-17"));
-        film.setGenres(Set.of(new Genre(1, "Комедия")));
         return film;
     }
 
@@ -46,8 +45,6 @@ class FilmDbStorageTest {
         assertEquals("Best film in the world", testFilm.getName());
         assertEquals(5, testFilm.getMpa().getId());
         assertEquals("NC-17", testFilm.getMpa().getName());
-        assertEquals(1, testFilm.getGenres().iterator().next().getId());
-        assertEquals("Комедия", testFilm.getGenres().iterator().next().getName());
     }
 
     @Test
@@ -80,7 +77,7 @@ class FilmDbStorageTest {
 
         oldFilm.setName("Worst movie in the universe");
         oldFilm.setDescription("This is the worst thing I have ever seen");
-        oldFilm.setGenres(Set.of(new Genre(2, "Драма"), new Genre(5, "Документальный")));
+        oldFilm.setMpa(new Mpa(1, "G"));
 
         Film newFilm = filmDbStorage.updateFilm(oldFilm);
 

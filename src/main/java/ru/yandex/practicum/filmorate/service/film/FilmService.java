@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.likes.LikesStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -19,12 +20,14 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
     private final LikesStorage likesStorage;
+    private final GenreStorage genreStorage;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage, LikesStorage likesStorage) {
+    public FilmService(FilmStorage filmStorage, UserStorage userStorage, LikesStorage likesStorage, GenreStorage genreStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.likesStorage = likesStorage;
+        this.genreStorage = genreStorage;
     }
 
     public Film addFilm(Film film) {
@@ -32,7 +35,11 @@ public class FilmService {
     }
 
     public List<Film> showAllFilms() {
-        return filmStorage.showAllFilms();
+        List<Film> filmList = filmStorage.showAllFilms();
+
+        filmList.forEach(film -> film.getGenres().addAll(genreStorage.getGenresByFilmId(film.getId())));
+
+        return filmList;
     }
 
     public Film updateFilm(Film newFilm) {
@@ -40,7 +47,11 @@ public class FilmService {
     }
 
     public Film getFilmById(long id) {
-        return filmStorage.getFilmById(id);
+        Film film = filmStorage.getFilmById(id);
+
+        genreStorage.getGenresByFilmId(id).forEach(genre -> film.getGenres().add(genre));
+
+        return film;
     }
 
     public void addLike(long filmId, long userId) {
