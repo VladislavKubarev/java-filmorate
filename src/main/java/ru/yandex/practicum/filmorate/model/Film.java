@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
@@ -19,6 +20,11 @@ public class Film {
     @Positive(message = "Продолжительность фильма не может быть отрицательной!")
     private int duration;
     private Mpa mpa;
-    private Set<Genre> genres = new HashSet<>();
+    private Set<Genre> genres = new TreeSet<>(Comparator.comparingLong(Genre::getId));
 
+    @JsonSetter
+    public void setGenres(Set<Genre> genres) {
+        this.genres.clear();
+        this.genres.addAll(genres);
+    }
 }

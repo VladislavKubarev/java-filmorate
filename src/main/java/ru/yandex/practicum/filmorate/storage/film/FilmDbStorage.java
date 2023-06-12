@@ -8,12 +8,12 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 
 import java.sql.*;
 
-import java.util.HashSet;
 import java.util.List;
 
 @Primary
@@ -57,7 +57,10 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> showAllFilms() {
-        String sqlQuery = "select * from films";
+        String sqlQuery = "select f.film_id, f.name, f.description, f.release_date, f.duration, " +
+                "rm.mpa_id, rm.name as mpa_name " +
+                "from films as f " +
+                "join rating_mpa as rm on f.mpa_id = rm.mpa_id";
 
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm);
     }
@@ -82,7 +85,11 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film getFilmById(long id) {
-        String sqlQuery = "select * from films where film_id = ?";
+        String sqlQuery = "select f.film_id, f.name, f.description, f.release_date, f.duration, " +
+                "rm.mpa_id, rm.name as mpa_name " +
+                "from films as f " +
+                "join rating_mpa as rm on f.mpa_id = rm.mpa_id " +
+                "where f.film_id = ?";
 
         try {
             return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToFilm, id);
@@ -98,8 +105,10 @@ public class FilmDbStorage implements FilmStorage {
         film.setDescription(resultSet.getString("description"));
         film.setReleaseDate(resultSet.getDate("release_date").toLocalDate());
         film.setDuration(resultSet.getInt("duration"));
-        film.setMpa(mpaStorage.getMpaById(resultSet.getInt("mpa_id")));
-        film.setGenres(new HashSet<>(genreStorage.getGenresByFilmId(resultSet.getLong("film_id"))));
+        film.setMpa(new Mpa(resultSet.getInt("mpa_id"), resultSet.getString("mpa_name")));
+
+        genreStorage.getGenresByFilmId(resultSet.getLong("film_id"))
+                .forEach(genre -> film.getGenres().add(genre));
 
         return film;
     }

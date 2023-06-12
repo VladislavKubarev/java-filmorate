@@ -37,8 +37,12 @@ public class FriendsDbStorage implements FriendsStorage {
 
     @Override
     public List<User> showFriendsList(long userId) {
-        String sqlQuery = "select * from users where user_id in" +
-                "(select friend_id from friends where user_id = ?)";
+        String sqlQuery = "select * " +
+                "from users " +
+                "where user_id in " +
+                "(select friend_id " +
+                "from friends " +
+                "where user_id = ?)";
 
         return jdbcTemplate.query(sqlQuery, new RowMapper<User>() {
             @Override
@@ -57,9 +61,14 @@ public class FriendsDbStorage implements FriendsStorage {
 
     @Override
     public List<User> showCommonFriendsList(long userId, long otherId) {
-        String sqlQuery = "select * from users where user_id in" +
-                "(select friend_id from friends where user_id = ?)" +
-                "and user_id in (select friend_id from friends where user_id = ?)";
+        String sqlQuery = "select * " +
+                "from users as u " +
+                "join friends as f on u.user_id = f.friend_id " +
+                "where f.user_id = ? and friend_id in " +
+                "(select friend_id " +
+                "from friends " +
+                "where user_id = ?)";
+
 
         return jdbcTemplate.query(sqlQuery, new RowMapper<User>() {
             @Override
