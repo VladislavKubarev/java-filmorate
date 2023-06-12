@@ -37,7 +37,11 @@ public class FilmService {
     public List<Film> showAllFilms() {
         List<Film> filmList = filmStorage.showAllFilms();
 
-        filmList.forEach(film -> film.getGenres().addAll(genreStorage.getGenresByFilmId(film.getId())));
+        try {
+            filmList.forEach(film -> film.getGenres().addAll(genreStorage.getGenresByFilmId(film.getId())));
+        } catch (NullPointerException e){
+            filmList.forEach(film -> film.getGenres().addAll(new ArrayList<>()));
+        }
 
         return filmList;
     }

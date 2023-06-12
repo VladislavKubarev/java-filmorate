@@ -6,6 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
@@ -39,6 +40,7 @@ class FilmControllerTest {
         film.setDescription("This is the best film in the history of mankind");
         film.setReleaseDate(LocalDate.of(2012, 12, 21));
         film.setDuration(180);
+        film.setMpa(new Mpa(1, "G"));
         return film;
     }
 
