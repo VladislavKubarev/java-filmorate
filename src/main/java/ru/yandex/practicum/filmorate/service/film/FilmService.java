@@ -39,7 +39,7 @@ public class FilmService {
 
         try {
             filmList.forEach(film -> film.getGenres().addAll(genreStorage.getGenresByFilmId(film.getId())));
-        } catch (NullPointerException e){
+        } catch (NullPointerException e) {
             filmList.forEach(film -> film.getGenres().addAll(new ArrayList<>()));
         }
 
