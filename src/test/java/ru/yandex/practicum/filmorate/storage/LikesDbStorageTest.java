@@ -15,7 +15,6 @@ import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -99,8 +98,7 @@ public class LikesDbStorageTest {
         likesDbStorage.addLike(film1, user2);
         likesDbStorage.addLike(film2, user1);
 
-        List<Film> popularFilm = likesDbStorage.showPopularFilm(5).stream()
-                .map(filmDbStorage::getFilmById).collect(Collectors.toList());
+        List<Film> popularFilm = likesDbStorage.showPopularFilm(5);
 
         assertEquals(film1, popularFilm.get(0));  // фильм1 два лайка
         assertEquals(film2, popularFilm.get(1)); // фильм2 1 лайк
@@ -121,8 +119,7 @@ public class LikesDbStorageTest {
         likesDbStorage.deleteLike(film1, user1);
         likesDbStorage.deleteLike(film1, user2);
 
-        List<Film> popularFilm = likesDbStorage.showPopularFilm(5).stream()
-                .map(filmDbStorage::getFilmById).collect(Collectors.toList());
+        List<Film> popularFilm = likesDbStorage.showPopularFilm(5);
 
         assertEquals(film2, popularFilm.get(0)); // фильм2 1 лайк
         assertEquals(film1, popularFilm.get(1));  // фильм1 ноль лайков

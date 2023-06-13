@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.storage.likes.LikesStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -37,11 +36,7 @@ public class FilmService {
     public List<Film> showAllFilms() {
         List<Film> filmList = filmStorage.showAllFilms();
 
-        try {
-            filmList.forEach(film -> film.getGenres().addAll(genreStorage.getGenresByFilmId(film.getId())));
-        } catch (NullPointerException e) {
-            filmList.forEach(film -> film.getGenres().addAll(new ArrayList<>()));
-        }
+        genreStorage.setGenresForFilm(filmList);
 
         return filmList;
     }
@@ -53,7 +48,7 @@ public class FilmService {
     public Film getFilmById(long id) {
         Film film = filmStorage.getFilmById(id);
 
-        genreStorage.getGenresByFilmId(id).forEach(genre -> film.getGenres().add(genre));
+        genreStorage.setGenresForFilm(List.of(film));
 
         return film;
     }
@@ -73,6 +68,10 @@ public class FilmService {
     }
 
     public List<Film> showPopularFilm(long count) {
-        return likesStorage.showPopularFilm(count).stream().map(filmStorage::getFilmById).collect(Collectors.toList());
+        List<Film> popularFilm = likesStorage.showPopularFilm(count);
+
+        genreStorage.setGenresForFilm(popularFilm);
+
+        return popularFilm;
     }
 }

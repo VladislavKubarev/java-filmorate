@@ -12,6 +12,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.function.Function.identity;
 
 @Repository
 public class GenreDbStorage implements GenreStorage {
@@ -38,7 +41,7 @@ public class GenreDbStorage implements GenreStorage {
 
             @Override
             public int getBatchSize() {
-               return genreList.size();
+                return genreList.size();
             }
         });
     }
@@ -78,6 +81,24 @@ public class GenreDbStorage implements GenreStorage {
                 "order by genre_id";
 
         return jdbcTemplate.query(sqlQuery, this::mapRowToGenre, filmId);
+    }
+
+    @Override
+    public void setGenresForFilm(List<Film> films) {
+        String inSql = String.join(",", Collections.nCopies(films.size(), "?"));
+
+        String sqlQuery = String.format("select fg.film_id, g.genre_id, g.name, " +
+                "from genre g, film_genre fg " +
+                "where fg.genre_id = g.genre_id " +
+                "and fg.film_id in (%s)", inSql);
+
+        Map<Long, Film> filmMap = films.stream().collect(Collectors.toMap(Film::getId, identity()));
+
+        jdbcTemplate.query(sqlQuery, (rs) -> {
+            Film film = filmMap.get(rs.getLong("film_id"));
+            Genre genre = new Genre(rs.getInt("genre_id"), rs.getString("name"));
+            film.getGenres().add(genre);
+        }, films.stream().map(Film::getId).toArray());
     }
 
     private Genre mapRowToGenre(ResultSet resultSet, int rowNum) throws SQLException {
