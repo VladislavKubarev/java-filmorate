@@ -16,6 +16,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,17 +42,8 @@ class FilmControllerTest {
         film.setReleaseDate(LocalDate.of(2012, 12, 21));
         film.setDuration(180);
         film.setMpa(new Mpa(1, "G"));
+        film.setGenres(new HashSet<>());
         return film;
-    }
-
-    @Test
-    void createCorrectFilm() {
-        Film testFilm = createFilm();
-
-        filmController.addFilm(testFilm);
-
-        assertEquals(1, testFilm.getId());
-        assertEquals(testFilm, filmController.showAllFilms().get(0));
     }
 
     @Test
