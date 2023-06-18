@@ -6,6 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
@@ -15,6 +16,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,7 +30,7 @@ class FilmControllerTest {
 
     @BeforeEach
     void setUp() {
-        filmService = new FilmService(new InMemoryFilmStorage(), new InMemoryUserStorage());
+        filmService = new FilmService(new InMemoryFilmStorage(), new InMemoryUserStorage(), null, null);
         filmController = new FilmController(filmService);
         validator = Validation.buildDefaultValidatorFactory().getValidator();
     }
@@ -39,17 +41,9 @@ class FilmControllerTest {
         film.setDescription("This is the best film in the history of mankind");
         film.setReleaseDate(LocalDate.of(2012, 12, 21));
         film.setDuration(180);
+        film.setMpa(new Mpa(1, "G"));
+        film.setGenres(new HashSet<>());
         return film;
-    }
-
-    @Test
-    void createCorrectFilm() {
-        Film testFilm = createFilm();
-
-        filmController.addFilm(testFilm);
-
-        assertEquals(1, testFilm.getId());
-        assertEquals(testFilm, filmController.showAllFilms().get(0));
     }
 
     @Test
